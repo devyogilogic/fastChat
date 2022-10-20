@@ -1,6 +1,9 @@
-const express = require("express");
+
+
+const { instrument } = require("@socket.io/admin-ui");const express = require("express");
 const colors = require("colors");
 const dbConnect = require("./db.js");
+
 require("dotenv").config();
 const { errorHandler, routeNotFound } = require("./middleware/errorMiddleware");
 const userRoutes = require("./routes/userRoutes");
@@ -8,11 +11,12 @@ const chatRoutes = require("./routes/chatRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const path = require("path");
+const cors = require("cors")
 
 dbConnect();
 const app = express();
 app.use(express.json({limit:Infinity}));
-
+app.use(cors())
 // Main routes
 app.use("/api/users", userRoutes);
 app.use("/api/chats", chatRoutes);
@@ -52,9 +56,13 @@ const server = app.listen(process.env.PORT || 5000, () => {
 const io = require("socket.io")(server, {
   pingTimeout: 60000,
   cors: {
-    origin: "*",
+    origin: ['https://admin.socket.io'],
   },
 });
+instrument(io, {
+  auth: false
+});
+
 
 io.on("connection", (socket) => {
   console.log("Sockets are in action");
